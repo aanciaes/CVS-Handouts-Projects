@@ -1,5 +1,4 @@
 method Main() 
- 
 {
   var p: Person := new Person ();
 
@@ -94,7 +93,7 @@ class Person {
   
   method save ()
     modifies this ` id, this.conn.db, this.conn ` size
-    requires transient ()
+    requires transient () || persistent()
     requires this.name.Length > 0
     requires this.age >= 0
     // if there is no connection, db passed must not be null and must not be full.
