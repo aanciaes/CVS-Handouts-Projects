@@ -16,7 +16,7 @@ method Main()
   assert p.conn.size >= 0;
   assert !db.isFull();
   
-  p.save();
+  //p.save();
   print db.size;
 }
 
@@ -119,6 +119,23 @@ class Person {
       this.setId(pos);
     }
   }
+  
+  method load(index: int) 
+   modifies this, this.name, this ` age, this ` id
+   requires this.conn != null
+   requires -1 < index < this.conn.size
+   requires this.conn.size <= this.conn.db.Length
+   requires persistent() || transient()
+   
+    {
+      var p: Person? := conn.find(index);
+
+      if(p!=null){
+        setName(p.name);
+        setAge(p.age);
+        setId(index);
+      }
+   }
 }
 
 class Database {
@@ -161,6 +178,25 @@ class Database {
     db[pos].setAge (age);
     rst := size;
     size := size + 1;
+  }
+  
+  method find(index:int) returns (p:Person?)
+    requires this.size <= this.db.Length
+    requires 0 <= index < this.size
+    ensures p!=null ==> p.name.Length > 0
+    ensures p!=null ==> p.age >= 0
+    ensures p!=null ==> index > -1
+  {
+    p := null;
+    if( db[index] != null) {
+       
+      if(db[index].name.Length > 0 && db[index].age >= 0) {
+        p := new Person();
+         
+        p.setAge(db[index].age);
+        p.setName(db[index].name);
+      }
+    }
   }
 }
 
