@@ -11,8 +11,9 @@ method Main()
   var db: Database := new Database ();
   print db.size; 
   print "\n";
+  p.setDb(db);
   
-  //p.save();
+  p.save();
   print db.size;
 }
 
@@ -96,7 +97,9 @@ class Person {
     //requires this.conn != null && db != null ==> !db.isFull()
     
     requires this.conn.size >= 0
-    
+    requires -1 < this.id < this.conn.size <= this.conn.db.Length
+        
+    ensures -1 < this.id < this.conn.size <= this.conn.db.Length
     ensures persistent ()
     ensures this.name.Length > 0
     ensures this.age >= 0
@@ -124,22 +127,28 @@ class Database {
   function isFull (): bool 
     reads this
   {
-    this.size >= this.db.Length
+    this.size <= this.db.Length
   }
   
-  method add (id: int, name: array<char>, age:int) returns (pos: int)
+  method add (id: int, name: array<char>, age:int) returns (rst: int)
     modifies this`size, this.db
     requires !isFull()
     requires this.size > -1
     requires name.Length > 0
     requires age >= 0
+    requires -1 < id < this.size <= this.db.Length
     ensures this.size > -1
-    ensures pos > -1
+    ensures rst > -1
   {
-    db[size] := new Row();
-    db[size].setName(name);
-    db[size].setAge (age);
-    pos := size;
+    var pos := id;
+    if(id < 0){
+         pos:= size;
+    }
+
+    db[pos] := new Row();
+    db[pos].setName(name);
+    db[pos].setAge (age);
+    rst := size;
     size := size + 1;
   }
 }
