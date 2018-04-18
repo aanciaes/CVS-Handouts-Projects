@@ -13,7 +13,7 @@ method Main()
   print "\n";
   p.setDb(db);
   
-  p.save();
+  //p.save();
   print db.size;
 }
 
@@ -127,7 +127,7 @@ class Database {
   function isFull (): bool 
     reads this
   {
-    this.size <= this.db.Length
+    this.size >= this.db.Length
   }
   
   method add (id: int, name: array<char>, age:int) returns (rst: int)
