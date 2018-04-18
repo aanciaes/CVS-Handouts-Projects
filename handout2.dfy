@@ -13,7 +13,11 @@ method Main()
   print "\n";
   p.setDb(db);
   
-  //p.save();
+  print p.conn.isFull();
+  assert p.conn.size >= 0;
+  assert !db.isFull();
+  
+  p.save();
   print db.size;
 }
 
@@ -54,8 +58,9 @@ class Person {
   
   method setId (id: int) 
     modifies this ` id;
-    requires id >= 0
-    ensures this.id >= 0
+    requires conn != null
+    requires -1 < id < this.conn.size
+    ensures -1 < this.id < this.conn.size
   {
     this.id := id;
   }
@@ -78,7 +83,11 @@ class Person {
   
   method setDb (db: Database)
     modifies this ` conn
+    requires db.size >= 0
+    requires db.db.Length >= 0
     ensures this.conn != null
+    ensures this.conn.size >= 0
+    ensures this.conn.db.Length >=0
   {
     this.conn := db;
   }
@@ -92,22 +101,24 @@ class Person {
     //requires this.conn == null ==> db != null && !db.isFull()
     // if there is a connection and no db is passed, current connection must not be full
     requires this.conn != null
-    requires !this.conn.isFull()
+    //requires !this.conn.isFull()
     // if there is a connection and a db is passed, we use the one passed by argument, and must not be full
     //requires this.conn != null && db != null ==> !db.isFull()
     
     requires this.conn.size >= 0
-    requires -1 < this.id < this.conn.size <= this.conn.db.Length
+    requires -1 <= this.id < this.conn.size
         
-    ensures -1 < this.id < this.conn.size <= this.conn.db.Length
-    ensures persistent ()
+    ensures -1 <= this.id < this.conn.size
+    ensures !this.conn.isFull() ==> persistent ()
     ensures this.name.Length > 0
     ensures this.age >= 0
     
   { 
     //var row := new Row ();
-    var pos := conn.add (this.id, this.name, this.age); 
-    this.id := pos;
+    if(!this.conn.isFull()){
+      var pos := conn.add (this.id, this.name, this.age); 
+      this.setId(pos);
+    }
   }
 }
 
@@ -119,12 +130,13 @@ class Database {
   constructor ()
     ensures fresh (db)
     ensures this.size >= 0
+    ensures !this.isFull()
   {
     this.size := 0;
     this.db := new Row? [10];
   }
   
-  function isFull (): bool 
+  function method isFull (): bool 
     reads this
   {
     this.size >= this.db.Length
@@ -136,9 +148,9 @@ class Database {
     requires this.size > -1
     requires name.Length > 0
     requires age >= 0
-    requires -1 < id < this.size <= this.db.Length
+    requires -1 <= id < this.size <= this.db.Length
     ensures this.size > -1
-    ensures rst > -1
+    ensures -1 < rst < this.size
   {
     var pos := id;
     if(id < 0){
