@@ -103,7 +103,7 @@ class Person {
     
   { 
     //var row := new Row ();
-    var pos := conn.add (); 
+    var pos := conn.add (this.id, this.name, this.age); 
     this.id := pos;
   }
 }
@@ -127,14 +127,18 @@ class Database {
     this.size >= this.db.Length
   }
   
-  method add () returns (pos: int)
+  method add (id: int, name: array<char>, age:int) returns (pos: int)
     modifies this`size, this.db
     requires !isFull()
     requires this.size > -1
+    requires name.Length > 0
+    requires age >= 0
     ensures this.size > -1
     ensures pos > -1
   {
     db[size] := new Row();
+    db[size].setName(name);
+    db[size].setAge (age);
     pos := size;
     size := size + 1;
   }
