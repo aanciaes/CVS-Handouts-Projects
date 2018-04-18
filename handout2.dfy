@@ -1,3 +1,7 @@
+// 43367 Miguel Anciaes
+// 43368 Ricardo Amaral
+
+
 method Main() 
 {
   var p: Person := new Person ();
@@ -135,6 +139,23 @@ class Person {
         setAge(p.age);
         setId(index);
       }
+   }
+   
+   method close () 
+    modifies this, this.conn
+    requires this.conn != null
+    requires this.id > -1
+    ensures this.detached()
+   {
+     this.conn := null;
+   }
+   
+   method update (db: Database) 
+    modifies this, this.conn
+    requires id > -1
+    ensures persistent (); 
+   {
+     this.conn := db;
    }
 }
 
