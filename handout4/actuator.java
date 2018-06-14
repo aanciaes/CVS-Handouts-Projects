@@ -8,23 +8,24 @@ import java.util.concurrent.locks.Condition;
 @*/
 
 class Actuator {
+
+	
+	/*ReentrantLock mon;
+    	Condition okRead;
+    	Condition okWrite;*/
+
 	int value;
-
-	ReentrantLock mon;
-    Condition okRead;
-    Condition okWrite;
-
-    boolean ready;
+    	boolean ready;
 	
 	
 	public Actuator() 
 	//@ requires true;
 	//@ ensures ActuatorInv(this);
 	{
-	this.mon = new ReentrantLock();
-    this.okRead = new Condition(mon);
-    this.okWrite = new Condition(mon);
-    this.read = true;
+		this.mon = new ReentrantLock();
+    		this.okRead = new Condition(mon);
+    		this.okWrite = new Condition(mon);
+    		this.read = true;
 	}
 
 	

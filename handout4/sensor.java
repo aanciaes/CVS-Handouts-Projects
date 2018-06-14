@@ -8,20 +8,21 @@ import java.util.concurrent.locks.ReentrantLock;
 @*/
 
 class Sensor {
+	
 	int value;
 	int min;
 	int max;
 
-	ReentrantLock mon;
+	//ReentrantLock mon;
 	
 	public Sensor(int min, int max) 
 	//@ requires min < max;
 	//@ ensures SensorInv(this);
 	{
-	this.min = min;
-	this.max = max;
-	this.value = min;
-	this.mon = new ReentrantLock();
+		this.min = min;
+		this.max = max;
+		this.value = min;
+		this.mon = new ReentrantLock();
 	}
 
 	
@@ -44,7 +45,7 @@ class Sensor {
 		//@ ensures true;
 	{
 
-	while(true) 
+		while(true) 
 		/*@ invariant [_]System_out(o) &*& o != null
 		&*& [_]TimeUnit_SECONDS(ss) &*& ss != null
 		&*& SensorInv(s, 10, 0);
