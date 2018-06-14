@@ -1,10 +1,20 @@
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.*;
 
 /*@
 
+	predicate_ctor Sensor_shared_state (Sensor s)() =
+			s.value |-> ?v 
+			&*& s.max |-> ?max 
+			&*& s.min |-> ?min 
+			&*& min < max 
+			&*& v>=min 
+			&*& v<=max;
+
 	predicate SensorInv ( Sensor s; ) = 
-			s.value |-> ?v &*& s.max |-> ?max &*& 
-			s.min |-> ?min &*& min < max;
+			s.mon |-> ?m
+			&*& m !=null
+			&*& lck(m,1, Sensor_shared_state(s));
 @*/
 
 class Sensor {
@@ -13,7 +23,7 @@ class Sensor {
 	int min;
 	int max;
 
-	//ReentrantLock mon;
+	ReentrantLock mon;
 	
 	public Sensor(int min, int max) 
 	//@ requires min < max;
@@ -22,6 +32,9 @@ class Sensor {
 		this.min = min;
 		this.max = max;
 		this.value = min;
+		
+		//@ close Sensor_shared_state(this)();
+		//@ close enter_lck(1,Sensor_shared_state(this));
 		this.mon = new ReentrantLock();
 	}
 
@@ -29,7 +42,17 @@ class Sensor {
 	public int get() 
 	//@ requires SensorInv(this);
 	//@ ensures SensorInv(this);
-	{ return this.value; }
+	{ 
+		int v;
+      		//@ open SensorInv(this);
+      		mon.lock(); 
+      		//@ open Sensor_shared_state(this)();
+      		v = this.value; // put a copy on the stack, private to the thread
+      		//@ close Sensor_shared_state(this)();
+      		mon.unlock();	
+      		//@ close SensorInv(this);
+      		return v;
+	}
 
 	public void set(int value) 
 	//@ requires SensorInv(this);
