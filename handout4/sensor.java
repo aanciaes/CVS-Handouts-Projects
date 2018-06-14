@@ -1,14 +1,16 @@
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /*@
 	predicate_ctor Sensor_shared_state (Sensor s)() =
 			s.value |-> ?v 
-			&*& s.max |-> ?max 
-			&*& s.min |-> ?min 
-			&*& min < max 
-			&*& v>=min 
-			&*& v<=max;
+			&*& s.max |-> ?m 
+			&*& s.min |-> ?mi 
+			&*& mi < m 
+			&*& v>=mi 
+			&*& v<=m
+			&*& s.ready |-> ?r;
 			
 	predicate_ctor Sensor_oktoread (Sensor s) () = 
 	s.value |-> ?v &*& s.ready |-> ?okr &*& okr == true;
@@ -39,13 +41,13 @@ class Sensor {
 	Condition okRead;
     	Condition okWrite;
 	
-	public Sensor(int min, int max) 
-	//@ requires min < max;
+	public Sensor(int MIN, int MAX) 
+	//@ requires MIN < MAX;
 	//@ ensures SensorInv(this);
 	{
-		this.min = min;
-		this.max = max;
-		this.value = min;
+		this.min = MIN;
+		this.max = MAX;
+		this.value = MIN;
 		this.ready = true;
 		
 		//@ close Sensor_shared_state(this)();
@@ -125,22 +127,11 @@ class Sensor {
 		/*@ invariant SensorInv(this);
       		@*/
 		{
+			//gerar random
+			int random = ThreadLocalRandom.current().nextInt(this.min, this.max + 1);
+			
+			this.set(random);
 		
-			//@ open SensorInv(this);
-			this.mon.lock();
-			
-			int tmp = this.get();
-			
-			//@ close SensorInv(this);
-			this.mon.unlock();
-			
-			if(tmp < this.min)
-				System.out.println("Got value: " + Integer.toString(this.min));
-			else if(tmp > this.max)
-				System.out.println("Got value: " + Integer.toString(this.max));
-			else
-				System.out.println("Got value : " + Integer.toString(tmp));
-				
 			TimeUnit.SECONDS.sleep(5);
 								
 		}
