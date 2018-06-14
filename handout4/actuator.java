@@ -31,7 +31,7 @@ class Actuator {
     	Condition okRead;
     	Condition okWrite;
 
-	int value;
+	boolean value;
     	boolean ready;
 	
 	
@@ -39,8 +39,8 @@ class Actuator {
 	//@ requires true;
 	//@ ensures ActuatorInv(this);
 	{
-		this.value=0;
-		this.ready == true;
+		this.value=false;
+		this.ready = true;
 		//@ close Actuator_shared_state(this)();
 		//@ close enter_lck(1,Actuator_shared_state(this));
 		this.mon = new ReentrantLock();
@@ -54,11 +54,11 @@ class Actuator {
 	}
 
 	
-	public int get() 
+	public boolean get() 
 	//@ requires ActuatorInv(this);
 	//@ ensures ActuatorInv(this);
 	{
-		int v;
+		boolean v;
       		//@ open ActuatorInv(this);
       		mon.lock(); 
       		//@ open Actuator_shared_state(this)();
@@ -70,7 +70,7 @@ class Actuator {
       		return v;
 	}
 
-	public void set(int value) 
+	public void set(boolean value) 
 	//@ requires [?f]ActuatorInv(this);
 	//@ ensures [f]ActuatorInv(this);
 	{ 
@@ -102,8 +102,6 @@ class Actuator {
 		this.ready == true;
 		//@ close Actuator_oktowrite(this)();
 		this.okWrite.signal();
-		
-		
 		
 		 mon.unlock(); // release ownership of the shared state
       		//@ close [f]ActuatorInv(this);

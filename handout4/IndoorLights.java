@@ -7,7 +7,6 @@
 class IndoorLights {
 	
 	int value;
-    
     	Sensor[] sensorList;
     	Actuator[] lampsList;
     	Log log;
