@@ -1,22 +1,36 @@
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.*;
 
 /*@
 	predicate_ctor Sensor_shared_state (Sensor s)() =
 			s.value |-> ?v 
-			&*& s.max |-> ?m 
-			&*& s.min |-> ?mi 
-			&*& mi < m 
-			&*& v>=mi 
-			&*& v<=m
+			&*& s.max |-> ?max 
+			&*& s.min |-> ?min 
+			&*& min < max 
+			&*& v>=min
+			&*& v<=max
 			&*& s.ready |-> ?r;
 			
 	predicate_ctor Sensor_oktoread (Sensor s) () = 
-	s.value |-> ?v &*& s.ready |-> ?okr &*& okr == true;
+			s.value |-> ?v 
+			&*& s.ready |-> ?okr 
+			&*& okr == true
+			&*& s.max |-> ?max 
+			&*& s.min |-> ?min 
+			&*& min < max 
+			&*& v>=min
+			&*& v<=max;
 	
 	predicate_ctor Sensor_oktowrite (Sensor s) () = 
-	s.value |-> ?v &*& s.ready |-> ?okr &*& okr == true;
+			s.value |-> ?v 
+			&*& s.ready |-> ?okr 
+			&*& okr == true
+			&*& s.max |-> ?max 
+			&*& s.min |-> ?min 
+			&*& min < max 
+			&*& v>=min
+			&*& v<=max;
 
 	predicate SensorInv ( Sensor s; ) = 
 			s.mon |-> ?m
@@ -88,6 +102,11 @@ class Sensor {
       		
       		while (!ready)
       		/*@ invariant this.value |-> ?v
+      			&*& this.min |-> ?min
+      			&*& this.max |-> ?max
+      			&*& min < max
+      			&*& v >= min
+      			&*& v<=max
       			&*& this.ready |-> ?r
       			&*& [f]this.okRead |-> ?okr
       			&*& okr != null
@@ -105,7 +124,11 @@ class Sensor {
       		
       		//@assert ready == true;
       		this.ready == false;
-		this.value = value; 
+      		if(value > max){
+			this.value = this.max;
+		}else if(value < min){
+			this.value = this.min;
+		} else this.value=value; 
 		
 		this.ready == true;
 		//@ close Sensor_oktowrite(this)();
@@ -118,19 +141,20 @@ class Sensor {
 
 	private void start()
 		/*@ requires [_]System_out(?o) &*& o != null
-			     &*& SensorInv(_);
+			     &*& [?f]SensorInv(this);
 		@*/
 		//@ ensures true;
 	{
-
+		//@open SensorInv(this);
+		
 		while(true) 
-		/*@ invariant SensorInv(this);
-      		@*/
+		//@invariant true;
 		{
 			//gerar random
-			int random = ThreadLocalRandom.current().nextInt(this.min, this.max + 1);
+			Random r = new Random();
+			int random = r.nextInt(100000);
 			
-			this.set(random);
+			set(random);
 		
 			TimeUnit.SECONDS.sleep(5);
 								
