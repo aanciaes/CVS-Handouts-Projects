@@ -31,6 +31,8 @@ class RainWindProtection {
                 
                 	int val1 = rain.get();
                 	int val2 = wind.get();
+                	
+                	String output = "value1 = " + val1 + " value2 = " + val2; 
 	
                 	if(val1 >  5 && val2 > 10){
                         
@@ -38,7 +40,7 @@ class RainWindProtection {
                         	a.set(1);                        
                         	//}
 
-                        	log.write("Rain/WindProtection", val1, val2, "true");
+                        	log.write("Rain/WindProtection", output, "true");
                 	}
     		}   
     	}	
